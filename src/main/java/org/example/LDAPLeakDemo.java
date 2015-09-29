@@ -1,6 +1,7 @@
 package org.example;
 
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -10,10 +11,13 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.hibernate.cfg.Configuration;
+
 @WebListener
 public class LDAPLeakDemo implements ServletContextListener {
-	public void contextInitialized(ServletContextEvent sce) { 
+	public void contextInitialized(ServletContextEvent sce) {
 		useLDAP();
+		useHibernate(); // It just increases PermGen usage which helps to demonstrate OutOfMemoryError
 	}
 	
 	public void contextDestroyed(ServletContextEvent sce) {}
@@ -39,5 +43,11 @@ public class LDAPLeakDemo implements ServletContextListener {
 		} catch (NamingException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void useHibernate() {
+		Properties properties = new Properties();
+		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+		new Configuration().setProperties(properties).buildSessionFactory();
 	}
 }
